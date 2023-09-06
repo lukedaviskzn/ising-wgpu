@@ -624,13 +624,17 @@ impl State {
                             spin: self.lattice.get(x as isize, y as isize, z as isize).into(),
                         };
 
-                        instances.push(instance.to_raw());
+                        instances.push(instance);
                     }
                 }
             }
         }
 
-        self.queue.write_buffer(&self.instance_buffer, 0, bytemuck::cast_slice(&instances));
+        instances.sort_by(|a, b| (b.position - self.camera.eye).length().total_cmp(&(a.position - self.camera.eye).length()));
+
+        let instances_raw = instances.iter().map(|i| i.to_raw()).collect::<Vec<_>>();
+
+        self.queue.write_buffer(&self.instance_buffer, 0, bytemuck::cast_slice(&instances_raw));
     }
 
     fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
@@ -690,7 +694,9 @@ pub async fn run() {
     env_logger::init();
 
     let event_loop = EventLoop::new();
-    let window = WindowBuilder::new().build(&event_loop).unwrap();
+    let window = WindowBuilder::new()
+        .with_title("3D Ising Model")
+        .build(&event_loop).unwrap();
 
     // State::new uses async code, so we're going to wait for it to finish
     let mut state = State::new(window).await;

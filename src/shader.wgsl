@@ -43,5 +43,9 @@ fn vs_main(
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
-    return vec4(0.5 - f32(in.spin) / 2.0, 0.0, 0.5 + f32(in.spin) / 2.0, 0.5);
+    if in.spin > 0 {
+        return vec4(0.15, 0.15, 1.0, 0.25);
+    } else {
+        return vec4(1.0, 0.15, 0.15, 0.25);
+    }
 }
